@@ -3,7 +3,7 @@
    git add .
    git commit -m "Initial commit"
    git branch -M main
-   git remote add origin https://github.com/[your-username]/johnnys-moving-calculator.git
+   git remote add origin https://github.com/bo0bzi/johnnys-moving-calculator.git
    git push -u origin main
    ```
 4. Install the gh-pages package:
