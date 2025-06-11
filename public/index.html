@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Johnny's Moving Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>Johnny's Moving Calculator</h1>
+        <form id="moving-form">
+            <div class="form-group">
+                <label for="distance">Distance (miles):</label>
+                <input type="number" id="distance" name="distance" required>
+            </div>
+            <div class="form-group">
+                <label for="hours">Hours:</label>
+                <input type="number" id="hours" name="hours" required>
+            </div>
+            <div class="form-group">
+                <label for="rate">Rate ($/hour):</label>
+                <input type="number" id="rate" name="rate" required>
+            </div>
+            <button type="submit">Calculate</button>
+        </form>
+        <div id="result"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> 
