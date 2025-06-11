@@ -1,0 +1,18 @@
+ ```bash
+   git init
+   git add .
+   git commit -m "Initial commit"
+   git branch -M main
+   git remote add origin https://github.com/[your-username]/johnnys-moving-calculator.git
+   git push -u origin main
+   ```
+4. Install the gh-pages package:
+   ```bash
+   npm install gh-pages --save-dev
+   ```
+5. Update the `homepage` field in `package.json` with your GitHub username
+6. Deploy the app:
+   ```bash
+   npm run deploy
+   ```
+7. Your app will be available at: `https://[your-username].github.io/johnnys-moving-calculator`
