@@ -28,7 +28,9 @@ function App() {
   const [endHour, setEndHour] = useState('01');
   const [endMinute, setEndMinute] = useState('30');
   const [endPeriod, setEndPeriod] = useState('PM');
-  const [driveTime, setDriveTime] = useState(0.5);
+  const [driveHour, setDriveHour] = useState('0');
+  const [driveMinute, setDriveMinute] = useState('00');
+  const [distance, setDistance] = useState(''); // New state for KM
 
   // Combine to time string for calculation
   const startTime = to12HourString(startHour, startMinute, startPeriod);
@@ -38,7 +40,7 @@ function App() {
   const start = parse12HourTime(startTime);
   const end = parse12HourTime(endTime);
   let moveTime = end - start;
-  let totalHours = moveTime + Number(driveTime);
+  let totalHours = moveTime + Number(driveHour) + Number(driveMinute) / 60;
   const timeError = end <= start;
   if (totalHours < 0) totalHours = 0;
   if (moveTime < 0) moveTime = 0;
@@ -68,36 +70,20 @@ function App() {
       `Extra time: ${extraTime.toFixed(1)} hrs (${extraIncrements} × 0.25 hr at $${quarterHourRate} per 0.25 hr): $${(extraIncrements * quarterHourRate).toFixed(2)}`;
   }
 
-  const taxedTotal = subtotal * 1.13;
+  // Fuel charge calculation
+  const km = parseFloat(distance) || 0;
+  const fuelCharge = km * 1; // $1 per KM
+
+  const taxedTotal = (subtotal + fuelCharge) * 1.13;
   const ccTotal = taxedTotal * 1.05;
 
-  // Export to CSV
-  const handleExportCSV = () => {
-    const csvRows = [
-      ['Workers', workers],
-      ['Start Time', startTime],
-      ['End Time', endTime],
-      ['Drive Time (hrs)', driveTime],
-      ['Total Hours', totalHours.toFixed(2)],
-      ['Subtotal', subtotal.toFixed(2)],
-      ['Taxed Total (13%)', taxedTotal.toFixed(2)],
-      ['Total with CC Fee (5%)', ccTotal.toFixed(2)],
-    ]
-    const csvContent = csvRows.map(row => row.join(',')).join('\n')
-    const blob = new Blob([csvContent], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'job-estimate.csv'
-    a.click()
-    URL.revokeObjectURL(url)
-  }
+  // Calculate drive time in hours
+  const driveTime = Number(driveHour) + Number(driveMinute) / 60;
 
   return (
     <div className="container">
       <div className="header">
-        <img src="/JM.png" alt="Johnny's Moving Logo" className="logo" />
-        <div style={{ fontSize: '0.7rem', color: '#bbb', marginTop: '-0.5rem', marginBottom: '0.5rem', letterSpacing: '0.03em' }}>Micro Penis Industries</div>
+        <img src="./JM.png" alt="Johnny's Moving Logo" className="logo" />
         <h1>Johnny's Moving & Delivery - Job Cost Calculator</h1>
       </div>
       <form className="calculator-form" onSubmit={e => e.preventDefault()}>
@@ -128,26 +114,48 @@ function App() {
             <select value={endPeriod} onChange={e => setEndPeriod(e.target.value)}>{periodOptions.map(p => <option key={p} value={p}>{p}</option>)}</select>
           </div>
         </label>
+        <label htmlFor="distance">
+          Distance (KM) for Fuel Charge:
+          <input
+            id="distance"
+            type="number"
+            min="0"
+            step="1"
+            value={distance}
+            onChange={e => setDistance(e.target.value)}
+            placeholder="Enter KM"
+            required={false}
+          />
+        </label>
         {timeError && (
           <div style={{color: 'red', fontSize: '0.95em'}}>End time must be after start time.</div>
         )}
-        <label htmlFor="driveTime">
-          Drive Time (hours):
-          <input id="driveTime" type="number" step="0.1" min="0" value={driveTime} onChange={e => setDriveTime(e.target.value)} required />
+        <label htmlFor="driveTimeGroup">
+          Drive Time:
+          <div id="driveTimeGroup" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <select value={driveHour} onChange={e => setDriveHour(e.target.value)}>
+              {Array.from({ length: 13 }, (_, i) => i.toString()).map(h => <option key={h} value={h}>{h.padStart(2, '0')}</option>)}
+            </select>
+            :
+            <select value={driveMinute} onChange={e => setDriveMinute(e.target.value)}>
+              {minuteOptions.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
+            <span>hrs : min</span>
+          </div>
         </label>
       </form>
       <div className="results">
         <h2>Results</h2>
         <p><span role="img" aria-label="clock">🕒</span><strong>Total Hours (move + drive):</strong> {totalHours.toFixed(2)}</p>
         <p><span role="img" aria-label="worker">👷‍♂️</span><strong>Move Time:</strong> {moveTime.toFixed(2)} hrs</p>
-        <p><span role="img" aria-label="truck">🚚</span><strong>Drive Time:</strong> {Number(driveTime).toFixed(2)} hrs</p>
-        <p className="total"><span role="img" aria-label="money">💵</span>Subtotal: ${subtotal.toFixed(2)}</p>
+        <p><span role="img" aria-label="truck">🚚</span><strong>Drive Time:</strong> {driveTime.toFixed(2)} hrs</p>
+        <p><span role="img" aria-label="fuel">⛽</span><strong>Fuel Charge:</strong> ${fuelCharge.toFixed(2)} ({km} KM @ $1/KM)</p>
+        <p className="total"><span role="img" aria-label="money">💵</span>Subtotal: ${(subtotal + fuelCharge).toFixed(2)}</p>
         <p style={{fontSize: '0.98em', color: '#234075', whiteSpace: 'pre-line'}}>{breakdown}</p>
         <div className="divider"></div>
         <p><span role="img" aria-label="tax">🧾</span><strong>With Tax (13% HST):</strong> ${taxedTotal.toFixed(2)}</p>
         <p className="total"><span role="img" aria-label="credit card">💳</span>Total with CC Fee (5%): ${ccTotal.toFixed(2)}</p>
       </div>
-      <button onClick={handleExportCSV} className="export-btn" disabled={timeError}>Export as CSV</button>
     </div>
   )
 }
